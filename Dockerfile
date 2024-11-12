@@ -6,7 +6,7 @@ FROM node:alpine as build-nodejs
 
 WORKDIR /build
 
-COPY . .
+COPY ./ .
 
 WORKDIR /build/frontend
 
@@ -32,12 +32,28 @@ RUN go build -v -o gensokyo .
 # 构建最终镜像
 FROM alpine:latest
 
-WORKDIR /app
+COPY docker-entrypoint.sh /docker-entrypoint.sh
 
-COPY --from=build-go /build/gensokyo .
+RUN chmod +x /docker-entrypoint.sh \
+    && apk add --no-cache --update su-exec tzdata \
+    && rm -rf /var/cache/apk/* \
+    && mkdir -p /app \ 
+    && mkdir -p /data \
+    && mkdir -p /config \
+    && useradd -d /config -s /bin/sh gsk \
+    && chown -R gsk /config \
+    && chown -R gsk /data
+
+ENV TZ="Asia/Shanghai"
+ENV UID=99
+ENV GID=100
+ENV UMASK=002
+
+COPY --from=build-go /build/gensokyo /app/
 
 WORKDIR /data
 
 VOLUME ["/data"]
 
+ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["/app/gensokyo"]
