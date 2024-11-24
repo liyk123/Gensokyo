@@ -35,7 +35,7 @@ FROM alpine:latest
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 
 RUN chmod +x /docker-entrypoint.sh \
-    && apk add --no-cache --update coreutils shadow su-exec tzdata \
+    && apk add --no-cache --update coreutils shadow su-exec tzdata ffmpeg \
     && rm -rf /var/cache/apk/* \
     && mkdir -p /app \ 
     && mkdir -p /data \
